@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hill Valley Midnight BBQ</title>
+    <title>ROBCO UNIFIED OS // BBQ TERMINAL</title>
     <style>
         :root {
-            --bg-dark: #110d0d;
-            --rust: #5c2a18;
-            --iron: #2c2c2c;
-            --neon-pink: #ff00a0;
-            --neon-blue: #00f3ff;
-            --neon-orange: #ff5e00;
-            --font-display: 'Courier New', Courier, monospace;
+            --term-green: #14fdce; /* Classic Fallout 4 Green */
+            --term-green-dim: rgba(20, 253, 206, 0.3);
+            --bg-color: #05110a;
+            --font-main: 'Courier New', Courier, monospace;
         }
 
         * {
@@ -23,357 +20,276 @@
         }
 
         body {
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 50% 0%, #2a1111 0%, transparent 50%),
-                repeating-linear-gradient(45deg, #000 0, #000 2px, #111 2px, #111 4px);
-            color: #fff;
-            font-family: var(--font-display);
-            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--term-green);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            padding-top: 2rem;
-        }
-
-        /* The Shake Animation for Order Execution */
-        @keyframes systemShake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-
-        .shake {
-            animation: systemShake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
-        /* True Neon Text Utility Classes */
-        .neon-title {
-            font-size: 3rem;
-            font-weight: 900;
             text-transform: uppercase;
-            color: #fff;
-            text-shadow: 
-                0 0 2px #fff,
-                0 0 10px #fff,
-                0 0 20px var(--neon-pink),
-                0 0 40px var(--neon-pink),
-                0 0 80px var(--neon-pink),
-                0 0 100px var(--neon-pink);
-            margin-bottom: 2rem;
-            text-align: center;
         }
 
-        .neon-orange {
-            color: #fff;
-            text-shadow: 
-                0 0 2px #fff,
-                0 0 5px var(--neon-orange),
-                0 0 15px var(--neon-orange),
-                0 0 30px var(--neon-orange);
+        /* CRT Scanlines & Vignette Overlay */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+            z-index: 101;
+            pointer-events: none;
         }
 
-        /* Menu Board */
-        .menu-board {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            width: 90%;
-            max-width: 1000px;
+        .glow {
+            text-shadow: 0 0 4px var(--term-green), 0 0 10px var(--term-green-dim);
+        }
+
+        /* Boot Screen */
+        #boot-screen {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 50;
+            font-size: 1.2rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        /* Main Interface */
+        #main-interface {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
             z-index: 10;
         }
 
+        header {
+            border-bottom: 2px solid var(--term-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Menu Section */
+        .menu-list {
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .menu-list::-webkit-scrollbar { width: 8px; }
+        .menu-list::-webkit-scrollbar-track { background: var(--bg-color); border: 1px solid var(--term-green); }
+        .menu-list::-webkit-scrollbar-thumb { background: var(--term-green); }
+
         .menu-item {
-            background: linear-gradient(135deg, var(--iron), #1a1a1a);
-            border: 4px solid var(--rust);
-            border-radius: 8px;
-            padding: 1.5rem;
-            position: relative;
+            border: 1px solid var(--term-green-dim);
+            padding: 15px;
+            margin-bottom: 15px;
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            box-shadow: 
-                inset 0 0 20px #000,
-                5px 5px 15px rgba(0,0,0,0.8);
-        }
-
-        .menu-item:active {
-            transform: translateY(4px);
-            box-shadow: inset 0 0 30px #000, 1px 1px 5px rgba(0,0,0,0.8);
-        }
-
-        .item-name {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: #fff;
-            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
-        }
-
-        .item-desc {
-            font-size: 0.9rem;
-            color: #aaa;
-            margin-bottom: 1rem;
-        }
-
-        .item-price {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-align: right;
-        }
-
-        /* Dashboard and Telegraph Controller */
-        .dashboard {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--iron);
-            border-top: 5px solid var(--rust);
-            padding: 1.5rem 2rem;
+            transition: all 0.1s;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 20;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+            background: rgba(20, 253, 206, 0.05);
+        }
+
+        .menu-item:hover {
+            background: var(--term-green);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--term-green-dim);
+        }
+
+        .item-details h3 { font-size: 1.2rem; margin-bottom: 5px; }
+        .item-details p { font-size: 0.8rem; opacity: 0.8; }
+        .item-price { font-size: 1.4rem; font-weight: bold; }
+
+        /* Terminal Sidebar */
+        .sidebar {
+            border: 2px solid var(--term-green);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-output {
+            flex-grow: 1;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            border-bottom: 1px dashed var(--term-green-dim);
+            padding-bottom: 10px;
         }
 
         .cart-status {
-            font-size: 1.5rem;
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
         }
 
-        .telegraph-btn {
-            background: var(--rust);
-            color: #fff;
-            border: 2px solid #ffaa00;
-            padding: 1rem 3rem;
-            font-size: 1.5rem;
-            font-family: var(--font-display);
+        button {
+            background: transparent;
+            color: var(--term-green);
+            border: 2px solid var(--term-green);
+            padding: 10px;
+            font-family: var(--font-main);
+            font-size: 1.2rem;
             font-weight: bold;
-            text-transform: uppercase;
             cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 0 15px var(--neon-orange), inset 0 0 10px #000;
-            text-shadow: 0 0 5px #ffaa00;
-            transition: all 0.2s;
+            text-transform: uppercase;
         }
 
-        .telegraph-btn:hover {
-            background: #7a3a20;
-            box-shadow: 0 0 25px var(--neon-orange), inset 0 0 10px #000;
+        button:hover:not(:disabled) {
+            background: var(--term-green);
+            color: var(--bg-color);
         }
 
-        .telegraph-btn:disabled {
-            background: #333;
-            border-color: #555;
-            box-shadow: none;
-            color: #777;
-            text-shadow: none;
+        button:disabled {
+            border-color: var(--term-green-dim);
+            color: var(--term-green-dim);
             cursor: not-allowed;
         }
 
-        /* ASCII Receipt Printer Overlay */
-        .receipt-container {
-            position: fixed;
-            top: -100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #fffbe6;
-            color: #111;
-            padding: 2rem;
-            width: 400px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-            z-index: 50;
-            font-weight: bold;
-            transition: top 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-bottom: 3px dashed #ccc;
+        /* Blinking Cursor */
+        .cursor::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
         }
 
-        .receipt-container.printed {
-            top: 10%;
-        }
-
-        .receipt-container pre {
-            white-space: pre-wrap;
-            font-size: 1rem;
-            line-height: 1.4;
-        }
-
-        .close-receipt {
-            margin-top: 1rem;
-            background: #111;
-            color: #fff;
-            border: none;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-family: var(--font-display);
-            width: 100%;
-        }
-
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <div class="neon-title">Midnight BBQ Provisions</div>
+    <div id="boot-screen" class="glow cursor"></div>
 
-    <div class="menu-board" id="menu-board">
+    <div id="main-interface" class="glow">
+        <header>
+            <h1>ROBCO INDUSTRIES UNIFIED OS v85</h1>
+            <h2>VAULT 76 PROVISIONS</h2>
+        </header>
+
+        <div class="layout-grid">
+            <div class="menu-list" id="menu-board">
+                </div>
+
+            <div class="sidebar">
+                <div class="terminal-output cursor" id="terminal-out">
+> AWAITING INPUT...
+                </div>
+                
+                <div class="cart-status">
+                    CAPS DUE: <span id="cart-total">0</span>
+                </div>
+                
+                <button id="execute-btn" disabled>[ DISPENSE RATIONS ]</button>
+            </div>
         </div>
-
-    <div class="dashboard">
-        <div class="cart-status">
-            TOTAL: $<span id="cart-total" class="neon-orange">0.00</span> 
-            [ <span id="cart-count">0</span> ITEMS ]
-        </div>
-        <button id="execute-btn" class="telegraph-btn" disabled>Transmit Order</button>
-    </div>
-
-    <div class="receipt-container" id="receipt-container">
-        <pre id="receipt-text"></pre>
-        <button class="close-receipt" onclick="resetSystem()">Acknowledge & Clear</button>
     </div>
 
     <script>
-        // 1. Database & State Management
+        // Data
         const menuData = [
-            { id: 1, name: "Holographic Pulled Pork Egg Rolls", desc: "Crispy outer shell, slow-smoked digital pork inside.", price: 12.50 },
-            { id: 2, name: "Cybernetic St. Louis Ribs", desc: "Half rack, hickory smoked, coated in glowing agave glaze.", price: 24.00 },
-            { id: 3, name: "Smoked Brisket Sandwich", desc: "14-hour smoke, served on a rusted iron-skillet brioche.", price: 18.75 },
-            { id: 4, name: "Photon BBQ Chicken", desc: "Pulled chicken drenched in localized thermal sauce.", price: 15.00 }
+            { id: 1, name: "Deathclaw Brisket", desc: "Slow-roasted for 200 years. +10 END.", price: 150 },
+            { id: 2, name: "Nuka-Glazed Ribs", desc: "Sticky, sweet, and slightly radioactive.", price: 250 },
+            { id: 3, name: "Brahmin Sliders", desc: "Two heads are better than one.", price: 120 },
+            { id: 4, name: "Mirelurk Mac & Cheese", desc: "Creamy, crunchy, aquatic.", price: 180 },
+            { id: 5, name: "Crispy Iguana Bits", desc: "Don't ask what part.", price: 45 },
+            { id: 6, name: "Quantum BBQ Sauce", desc: "Glows in the dark. Highly flammable.", price: 80 }
         ];
 
         let cart = [];
         let orderTotal = 0;
+        let isPrinting = false;
 
-        // 2. DOM Elements
+        // DOM Elements
+        const bootScreen = document.getElementById('boot-screen');
+        const mainInterface = document.getElementById('main-interface');
         const menuBoard = document.getElementById('menu-board');
         const cartTotalEl = document.getElementById('cart-total');
-        const cartCountEl = document.getElementById('cart-count');
         const executeBtn = document.getElementById('execute-btn');
-        const receiptContainer = document.getElementById('receipt-container');
-        const receiptText = document.getElementById('receipt-text');
+        const terminalOut = document.getElementById('terminal-out');
 
-        // 3. Audio Context (Synthesized Steam Hiss & Clicks)
+        // Audio System (Synthesized directly in browser)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        function playClick() {
+        function playBeep(freq = 600, type = 'square', duration = 0.05) {
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
+            osc.stop(audioCtx.currentTime + duration);
         }
 
-        function playSteamHiss() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const bufferSize = audioCtx.sampleRate * 2; 
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1; // White noise
+        function playGeigerTick() {
+            playBeep(Math.random() * 2000 + 1000, 'sawtooth', 0.02);
+        }
+
+        // Boot Sequence Logic
+        const bootText = [
+            "ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM",
+            "COPYRIGHT 2075-2077 ROBCO INDUSTRIES",
+            "-Server 1-",
+            "Node 3",
+            "BIOS Check: OK",
+            "Memory Check: 640K OK",
+            "Mounting VFS... DONE",
+            "Loading Vault-Tec Protocols...",
+            "Initializing Provisions UI..."
+        ];
+
+        async function runBootSequence() {
+            let currentText = "";
+            for (let i = 0; i < bootText.length; i++) {
+                currentText += bootText[i] + "\n";
+                bootScreen.innerText = currentText;
+                playGeigerTick();
+                await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
             }
-            const noise = audioCtx.createBufferSource();
-            noise.buffer = buffer;
-            const bandpass = audioCtx.createBiquadFilter();
-            bandpass.type = 'bandpass';
-            bandpass.frequency.value = 1000;
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-            
-            noise.connect(bandpass);
-            bandpass.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            noise.start();
+            await new Promise(r => setTimeout(r, 600));
+            bootScreen.style.display = 'none';
+            mainInterface.style.display = 'flex';
+            renderMenu();
         }
 
-        // 4. UI Initialization
+        // UI Logic
         function renderMenu() {
             menuData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'menu-item';
                 card.innerHTML = `
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-desc">${item.desc}</div>
-                    <div class="item-price neon-orange">$${item.price.toFixed(2)}</div>
-                `;
-                card.addEventListener('click', () => addToCart(item));
-                menuBoard.appendChild(card);
-            });
-        }
-
-        function addToCart(item) {
-            playClick();
-            cart.push(item);
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            orderTotal = cart.reduce((sum, item) => sum + item.price, 0);
-            cartTotalEl.innerText = orderTotal.toFixed(2);
-            cartCountEl.innerText = cart.length;
-            executeBtn.disabled = cart.length === 0;
-        }
-
-        // 5. Order Execution Sequence
-        executeBtn.addEventListener('click', () => {
-            if (cart.length === 0) return;
-            
-            // Trigger visual and audio effects
-            document.body.classList.add('shake');
-            playSteamHiss();
-            
-            setTimeout(() => {
-                document.body.classList.remove('shake');
-                generateReceipt();
-            }, 600);
-        });
-
-        function generateReceipt() {
-            let receiptStr = "================================\n";
-            receiptStr += "      HILL VALLEY BBQ 1885      \n";
-            receiptStr += "================================\n\n";
-            
-            cart.forEach(item => {
-                let nameStr = item.name.substring(0, 22).padEnd(23, '.');
-                receiptStr += `${nameStr} $${item.price.toFixed(2)}\n`;
-            });
-            
-            receiptStr += "\n--------------------------------\n";
-            receiptStr += `TOTAL DUE............... $${orderTotal.toFixed(2)}\n`;
-            receiptStr += "================================\n";
-            receiptStr += "  TRANSMISSION SUCCESSFUL  \n";
-
-            receiptText.innerText = receiptStr;
-            receiptContainer.classList.add('printed');
-        }
-
-        function resetSystem() {
-            playClick();
-            cart = [];
-            updateCartUI();
-            receiptContainer.classList.remove('printed');
-        }
-
-        // Boot
-        renderMenu();
-
-    </script>
-</body>
-</html>
+                    <div class="item-details">
+                        <h3>${item.name}</h3>
+                        <p>${item.desc}</p>
