@@ -63,7 +63,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 200; /* Pushed above overlays */
+            z-index: 200; 
             font-size: 2.5rem;
             cursor: pointer;
             background-color: var(--bg-color);
@@ -263,21 +263,164 @@
         const executeBtn = document.getElementById('execute-btn');
         const terminalOut = document.getElementById('terminal-out');
 
-        // LAZY LOAD AUDIO: Prevents strict-mode browser crashes
+        // LAZY LOAD & ERROR CATCH AUDIO
         let audioCtx = null;
 
         function getAudioContext() {
             if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.warn("Audio disabled by browser.");
+                    return null; // Gracefully fail
+                }
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                try {
+                    audioCtx.resume();
+                } catch (e) {
+                    console.warn("Could not resume audio.");
+                }
             }
             return audioCtx;
         }
 
         function playBeep(freq = 600, type = 'square', duration = 0.05) {
             const ctx = getAudioContext();
-            if (!ctx) return;
-            const osc = ctx.createOscillator();
-            const gain = ctx.
+            if (!ctx) return; // Silent fallback if audio is blocked
+            
+            try {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) {
+                // Ignore silent errors during playback
+            }
+        }
+
+        function playGeigerTick() {
+            if (isSystemLocked) return;
+            playBeep(Math.random() * 2000 + 1000, 'sawtooth', 0.02);
+        }
+
+        // Power On Sequence
+        powerScreen.addEventListener('click', () => {
+            getAudioContext(); // Try to initialize audio, won't crash if it fails
+            
+            // UI shifts run independently of audio success
+            powerScreen.style.display = 'none';
+            bootScreen.style.display = 'block';
+            runBootSequence();
+        });
+
+        // Boot Sequence Logic
+        const bootText = [
+            "ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM",
+            "COPYRIGHT 2075-2077 ROBCO INDUSTRIES",
+            "-Server 1-",
+            "Node 3",
+            "BIOS Check: OK",
+            "Memory Check: 640K OK",
+            "Mounting VFS... DONE",
+            "Loading Vault-Tec Protocols...",
+            "Initializing Provisions UI..."
+        ];
+
+        async function runBootSequence() {
+            let currentText = "";
+            for (let i = 0; i < bootText.length; i++) {
+                currentText += bootText[i] + "\n";
+                bootScreen.innerText = currentText;
+                playBeep(Math.random() * 2000 + 1000, 'sawtooth', 0.02);
+                await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+            }
+            await new Promise(r => setTimeout(r, 600));
+            bootScreen.style.display = 'none';
+            mainInterface.style.display = 'flex';
+            renderMenu();
+        }
+
+        // UI Logic
+        function renderMenu() {
+            menuData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'menu-item';
+                card.innerHTML = `
+                    <div class="item-details">
+                        <h3>${item.name}</h3>
+                        <p>${item.desc}</p>
+                    </div>
+                    <div class="item-price">${item.price}c</div>
+                `;
+                
+                card.addEventListener('mouseenter', playGeigerTick);
+                card.addEventListener('click', () => {
+                    if (!isSystemLocked) addToCart(item);
+                });
+                
+                menuBoard.appendChild(card);
+            });
+        }
+
+        function addToCart(item) {
+            playBeep(800, 'square', 0.1);
+            cart.push(item);
+            orderTotal += item.price;
+            updateCartUI();
+            
+            if (cart.length === 1 && terminalOut.innerText.includes("AWAITING INPUT")) {
+                terminalOut.innerText = ""; 
+            }
+            printToTerminal(`> ADDED: ${item.name} (${item.price}c)`);
+        }
+
+        function updateCartUI() {
+            cartTotalEl.innerText = orderTotal;
+            executeBtn.disabled = cart.length === 0 || isSystemLocked;
+        }
+
+        async function printToTerminal(text) {
+            terminalOut.innerText += '\n';
+            for (let i = 0; i < text.length; i++) {
+                terminalOut.innerText += text[i];
+                terminalOut.scrollTop = terminalOut.scrollHeight;
+                if (i % 3 === 0) playBeep(Math.random() * 2000 + 1000, 'sawtooth', 0.02);
+                await new Promise(r => setTimeout(r, 15));
+            }
+        }
+
+        // Execution Logic
+        executeBtn.addEventListener('click', async () => {
+            if (cart.length === 0 || isSystemLocked) return;
+            
+            isSystemLocked = true;
+            executeBtn.disabled = true;
+            playBeep(400, 'square', 0.5);
+            
+            terminalOut.innerText = ""; 
+            await printToTerminal("> INITIATING DISPENSARY...");
+            await new Promise(r => setTimeout(r, 500));
+            
+            let receipt = "\n--- VAULT 76 RATIONS ---\n";
+            cart.forEach(item => {
+                receipt += `${item.name.padEnd(25, '.')} ${item.price}c\n`;
+            });
+            receipt += "------------------------\n";
+            receipt += `TOTAL DEDUCTED: ${orderTotal}c\n`;
+            receipt += "> DISPENSING. HAVE A VAULT-TEC DAY.";
+
+            await printToTerminal(receipt);
+            
+            cart = [];
+            orderTotal = 0;
+            updateCartUI(); 
+            
+            setTimeout(() => {
+                terminalOut.innerText = "> AWAITING INPUT...";
