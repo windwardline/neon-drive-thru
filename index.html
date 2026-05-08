@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROBCO UNIFIED OS // BBQ TERMINAL</title>
+    <style>
+        :root {
+            --term-green: #14fdce; 
+            --term-green-dim: rgba(20, 253, 206, 0.3);
+            --bg-color: #05110a;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* Prevents ugly text highlighting */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--term-green);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-transform: uppercase;
+        }
+
+        /* CRT Scanlines & Vignette Overlay */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+            z-index: 101;
+            pointer-events: none;
+        }
+
+        .glow {
+            text-shadow: 0 0 4px var(--term-green), 0 0 10px var(--term-green-dim);
+        }
+
+        /* Power On & Boot Screens */
+        #power-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 60;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background-color: var(--bg-color);
+        }
+
+        #boot-screen {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 50;
+            font-size: 1.2rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            display: none;
+        }
+
+        /* Main Interface */
+        #main-interface {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            border-bottom: 2px solid var(--term-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Menu Section */
+        .menu-list {
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .menu-list::-webkit-scrollbar { width: 8px; }
+        .menu-list::-webkit-scrollbar-track { background: var(--bg-color); border: 1px solid var(--term-green); }
+        .menu-list::-webkit-scrollbar-thumb { background: var(--term-green); }
+
+        .menu-item {
+            border: 1px solid var(--term-green-dim);
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 253, 206, 0.05);
+        }
+
+        .menu-item:hover {
+            background: var(--term-green);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--term-green-dim);
+        }
+
+        .item-details h3 { font-size: 1.2rem; margin-bottom: 5px; }
+        .item-details p { font-size: 0.8rem; opacity: 0.8; }
+        .item-price { font-size: 1.4rem; font-weight: bold; }
+
+        /* Terminal Sidebar */
+        .sidebar {
+            border: 2px solid var(--term-green);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            min-width: 350px;
+        }
+
+        .terminal-output {
+            flex-grow: 1;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            border-bottom: 1px dashed var(--term-green-dim);
+            padding-bottom: 10px;
+        }
+
+        /* Hide scrollbar for terminal to keep it clean */
+        .terminal-output::-webkit-scrollbar { display: none; }
+
+        .cart-status {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: transparent;
+            color: var(--term-green);
+            border: 2px solid var(--term-green);
+            padding: 10px;
+            font-family: var(--font-main);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--term-green);
+            color: var(--bg-color);
+        }
+
+        button:disabled {
+            border-color: var(--term-green-dim);
+            color
