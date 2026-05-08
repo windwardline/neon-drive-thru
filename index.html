@@ -16,7 +16,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none; /* Prevents ugly text highlighting */
+            user-select: none; 
         }
 
         body {
@@ -56,17 +56,23 @@
             text-shadow: 0 0 4px var(--term-green), 0 0 10px var(--term-green-dim);
         }
 
-        /* Power On & Boot Screens */
+        /* Massive, pulsing Power On Screen */
         #power-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 60;
-            font-size: 1.5rem;
+            z-index: 200; /* Pushed above overlays */
+            font-size: 2.5rem;
             cursor: pointer;
             background-color: var(--bg-color);
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; text-shadow: 0 0 10px var(--term-green); }
+            100% { opacity: 1; text-shadow: 0 0 30px var(--term-green), 0 0 50px var(--term-green); }
         }
 
         #boot-screen {
@@ -162,7 +168,6 @@
             padding-bottom: 10px;
         }
 
-        /* Hide scrollbar for terminal to keep it clean */
         .terminal-output::-webkit-scrollbar { display: none; }
 
         .cart-status {
@@ -190,4 +195,89 @@
 
         button:disabled {
             border-color: var(--term-green-dim);
-            color
+            color: var(--term-green-dim);
+            cursor: not-allowed;
+            background: transparent;
+        }
+
+        /* Blinking Cursor */
+        .cursor::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="power-screen" class="cursor">
+        [ CLICK TO INITIALIZE TERMINAL ]
+    </div>
+
+    <div id="boot-screen" class="glow cursor"></div>
+
+    <div id="main-interface" class="glow">
+        <header>
+            <h1>ROBCO INDUSTRIES UNIFIED OS v85</h1>
+            <h2>VAULT 76 PROVISIONS</h2>
+        </header>
+
+        <div class="layout-grid">
+            <div class="menu-list" id="menu-board">
+                </div>
+
+            <div class="sidebar">
+                <div class="terminal-output cursor" id="terminal-out">> AWAITING INPUT...</div>
+                
+                <div class="cart-status">
+                    CAPS DUE: <span id="cart-total">0</span>
+                </div>
+                
+                <button id="execute-btn" disabled>[ DISPENSE RATIONS ]</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const menuData = [
+            { id: 1, name: "Deathclaw Brisket", desc: "Slow-roasted for 200 years. +10 END.", price: 150 },
+            { id: 2, name: "Nuka-Glazed Ribs", desc: "Sticky, sweet, and slightly radioactive.", price: 250 },
+            { id: 3, name: "Brahmin Sliders", desc: "Two heads are better than one.", price: 120 },
+            { id: 4, name: "Mirelurk Mac & Cheese", desc: "Creamy, crunchy, aquatic.", price: 180 },
+            { id: 5, name: "Crispy Iguana Bits", desc: "Don't ask what part.", price: 45 },
+            { id: 6, name: "Quantum BBQ Sauce", desc: "Glows in the dark. Highly flammable.", price: 80 }
+        ];
+
+        let cart = [];
+        let orderTotal = 0;
+        let isSystemLocked = false; 
+
+        // DOM Elements
+        const powerScreen = document.getElementById('power-screen');
+        const bootScreen = document.getElementById('boot-screen');
+        const mainInterface = document.getElementById('main-interface');
+        const menuBoard = document.getElementById('menu-board');
+        const cartTotalEl = document.getElementById('cart-total');
+        const executeBtn = document.getElementById('execute-btn');
+        const terminalOut = document.getElementById('terminal-out');
+
+        // LAZY LOAD AUDIO: Prevents strict-mode browser crashes
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playBeep(freq = 600, type = 'square', duration = 0.05) {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.
